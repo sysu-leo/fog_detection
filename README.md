@@ -1,0 +1,1 @@
+# fog_detection
