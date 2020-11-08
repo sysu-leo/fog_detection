@@ -1,9 +1,9 @@
 import os
 import shutil
 
-path = '/home/liqiang/Documents/FOG_DETECTION/fog_detection/Dataset/train.txt'
+path = '/home/liqiang/Documents/FOG_DETECTION/fog_detection/Dataset/valid.txt'
 file = open(path, 'r')
-path2 = '/home/liqiang/Documents/FOG_DETECTION/fog_detection/Dataset/new_train.txt'
+path2 = '/home/liqiang/Documents/FOG_DETECTION/fog_detection/Dataset/new_valid.txt'
 file2 = open(path2, 'w')
 tlist = file.readlines()
 
