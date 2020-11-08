@@ -18,15 +18,15 @@ class MyDataSet(data.Dataset):
         labels = []
         for line in fh.readlines():
             tlist = line.strip().split(' ')
-            if len(tlist) > 2:
+            if len(tlist) > 3:
                 t = ''
-                for pp in range(len(tlist) -2):
+                for pp in range(len(tlist) -3):
                     t += tlist[pp]
                     t += ' '
-                t += tlist[-2]
-                labels.append((t, int(tlist[-1])))
+                t += tlist[-3]
+                labels.append((t, int(tlist[-2]), float(tlist[-1])))
             else:
-                labels.append((tlist[0], int(tlist[1])))
+                labels.append((tlist[0], int(tlist[1]), float(tlist[2])))
         self.root = root
         self.labels = labels
         self.transform  = tranform
@@ -36,7 +36,7 @@ class MyDataSet(data.Dataset):
         self.file_slice = file_slice
 
     def __getitem__(self, index):
-        img_name, label = self.labels[index]
+        img_name, label1, label2 = self.labels[index]
         img = Image.open(os.path.join(self.root, self.file_rgb, img_name)).convert('RGB')
         img = self.transform(img)
 
@@ -54,7 +54,7 @@ class MyDataSet(data.Dataset):
         img_ = trans(img_)
         res = img_
 
-        return img_name, img, res, label
+        return img_name, img, res, label1, label2
 
 
     def __len__(self):
