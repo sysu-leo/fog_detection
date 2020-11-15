@@ -25,8 +25,10 @@ class MyDataSet(data.Dataset):
                     t += ' '
                 t += tlist[-3]
                 labels.append((t, int(tlist[-2]), float(tlist[-1])))
-            else:
+            elif len(tlist) == 3:
                 labels.append((tlist[0], int(tlist[1]), float(tlist[2])))
+            else:
+                print('error')
         self.root = root
         self.labels = labels
         self.transform  = tranform

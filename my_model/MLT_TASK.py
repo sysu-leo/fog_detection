@@ -13,6 +13,8 @@ class MulTask(nn.Module):
         super(MulTask, self).__init__()
         self.rgbdNet = rgbdNet1()
         self.sliceNet = sliceNet()
+        self.tmlp = mlp()
+        self.softmax = nn.Softmax(dim=6)
         self.classifier = nn.Sequential(
             nn.BatchNorm2d(2),
             claasifierNet1(input_channel=2)
@@ -27,7 +29,7 @@ class MulTask(nn.Module):
 
         x_cls = torch.cat((x_1, x_2), dim=1)
         x_cls = self.classifier(x_cls)
-
-        x_pre = mlp(x1, x2, x_cls)
+        # x_tt = self.softmax(x_cls)
+        x_pre = self.tmlp(x1, x2, x_cls)
 
         return x_cls, x_pre
