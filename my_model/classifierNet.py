@@ -73,9 +73,10 @@ class claasifierNet2(nn.Module):
 class mlp(nn.Module):
     def __init__(self):
         super(mlp, self).__init__()
-        self.dropout = nn.Dropout(0.5)
-        self.linear1 = nn.Linear(in_features=10, out_features=128)
-        self.linear2 = nn.Linear(in_features = 128, out_features = 64)
+        self.dropout = nn.Dropout(0.3)
+        self.softmax = nn.Softmax(dim=4)
+        self.linear1 = nn.Linear(in_features=4, out_features=64)
+        self.linear2 = nn.Linear(in_features = 64, out_features = 64)
         self.linear3 = nn.Linear(in_features=64, out_features = 1)
     def forward(self, x1, x2, x3):
         x_1, _ = torch.max(x1,dim=1, keepdim=True)
@@ -85,8 +86,9 @@ class mlp(nn.Module):
 
         x_4 = torch.mean(x2, dim=1, keepdim=True)
 
-        x = torch.cat((x_1, x_2, x_3, x_4, x3), dim=1)
+        x = torch.cat((x_1, x_2, x_3, x_4), dim=1)
 
+        x = self.softmax(x)
         x = (F.relu(self.dropout(self.linear1(x))))
         x = (F.relu(self.dropout(self.linear2(x))))
         x = (F.relu(self.dropout(self.linear3(x))))
