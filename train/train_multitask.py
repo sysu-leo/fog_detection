@@ -61,7 +61,7 @@ print(model)
 
 # set loss, optimizer, scheduler
 loss_cls = nn.CrossEntropyLoss()
-loss_pre = nn.L1Loss()
+loss_pre = nn.SmoothL1Loss()
 optimizer = torch.optim.SGD(
     model.parameters(),
     lr=cp.getfloat(section, 'lr'),
@@ -113,7 +113,8 @@ for i in range(0, epoch):
         loss1 = loss_cls(output1, labels1)
         labels2 = labels2.float()
         loss2 = loss_pre(est1, labels2 )
-        losses = loss2*10 + loss1
+        # losses = loss2*10 + loss1
+        losses = loss2
         losses.backward()
         optimizer.step()
         running_loss += loss1.item() * x1.size(0)
