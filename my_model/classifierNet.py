@@ -94,5 +94,35 @@ class mlp(nn.Module):
         x = (F.relu(self.dropout(self.linear3(x))))
         return x
 
+class mlp2(nn.Module):
+    def __init__(self):
+        super(mlp2, self).__init__()
+        self.dropout = nn.Dropout(0.3)
+        self.softmax = nn.Softmax(dim=4)
+        self.linear1 = nn.Linear(in_features=6, out_features=64)
+        self.linear2 = nn.Linear(in_features = 64, out_features = 64)
+        self.linear3 = nn.Linear(in_features=64, out_features = 1)
+    def forward(self, x1, x2, x3):
+        x_1, _ = torch.max(x1,dim=1, keepdim=True)
+
+        x_2, _ = torch.max(x2, dim = 1, keepdim=True)
+
+        x_3 = torch.mean(x1, dim=1, keepdim=True)
+
+        x_4 = torch.mean(x2, dim=1, keepdim=True)
+
+        x_5, _ = torch.min(x1, dim=1, keepdim=True)
+
+        x_6, _ = torch.min(x2, dim = 1, keepdim=True)
+
+
+        x = torch.cat((x_1, x_2, x_3, x_4, x_5, x_6), dim=1)
+
+        x = self.softmax(x)
+        x = (F.relu(self.dropout(self.linear1(x))))
+        x = (F.relu(self.dropout(self.linear2(x))))
+        x = (F.relu(self.dropout(self.linear3(x))))
+        return x
+
 
 
