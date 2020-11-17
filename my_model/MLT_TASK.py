@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from my_model.classifierNet import claasifierNet1, mlp
+from my_model.classifierNet import claasifierNet1, mlp3
 from my_model.sliceNet1 import sliceNet
 from my_model.rgbdNet1 import rgbdNet1
 
