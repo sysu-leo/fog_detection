@@ -4,6 +4,9 @@ import torchvision.transforms as transforms
 import torch.utils.data as data
 import torch.nn as nn
 import torch.optim
+from my_model.classifierNet import claasifierNet1, mlp2
+from my_model.MLT_TASK import FeaModel
+
 import os
 from configparser import ConfigParser
 
@@ -52,26 +55,41 @@ torch.cuda.set_device(device)
 
 # load weight
 weight_path = '../Parameters/mul_task/epoch20.pth'
-model = MulTask()
-model = model.to(device)
-model.load_state_dict(torch.load(weight_path))
+model1 = FeaModel()
+model2 = claasifierNet1()
+# model3 = mlp2()
+# model = model.to(device)
+# model.load_state_dict(torch.load(weight_path))
 #summary(model.cuda(),  ((4, 448, 448), (3, 488, 488)))
-print(model)
+# print(model)
 
 
 # set loss, optimizer, scheduler
 loss_cls = nn.CrossEntropyLoss()
 loss_pre = nn.SmoothL1Loss()
-optimizer = torch.optim.SGD(
-    model.parameters(),
+optimizer1 = torch.optim.SGD(
+    model1.parameters(),
+    lr=cp.getfloat(section, 'lr'),
+    momentum=cp.getfloat(section,'momentum'),
+    weight_decay=cp.getfloat(section, 'weight_decay')
+)
+
+optimizer2 = torch.optim.SGD(
+    model2.parameters(),
     lr=cp.getfloat(section, 'lr'),
     momentum=cp.getfloat(section,'momentum'),
     weight_decay=cp.getfloat(section, 'weight_decay')
 )
 
 
-scheduler = torch.optim.lr_scheduler.StepLR(
-    optimizer,
+scheduler1 = torch.optim.lr_scheduler.StepLR(
+    optimizer1,
+    step_size =cp.getint(section, 'step_size'),
+    gamma = cp.getfloat(section, 'gamma')
+)
+
+scheduler2 = torch.optim.lr_scheduler.StepLR(
+    optimizer2,
     step_size =cp.getint(section, 'step_size'),
     gamma = cp.getfloat(section, 'gamma')
 )
@@ -91,7 +109,8 @@ trainset_size = len(trainset)
 validset_size = len(validset)
 
 # train
-model.train()
+model1.train()
+model2.train()
 epoch = cp.getint(section, 'epoch')
 batchsize = cp.getint(section, 'batchsize')
 for i in range(0, epoch):
@@ -105,24 +124,26 @@ for i in range(0, epoch):
         labels2 = labels2.to(device)
         x1 = x1.to(device)
         x2 = x2.to(device)
-        optimizer.zero_grad()
-        output1, output2 = model(x1, x2)
-        _, pred1 = torch.max(output1, 1)
-        est1 = torch.squeeze(output2)
+        optimizer1.zero_grad()
+        optimizer2.zero_grad()
+        output1, output2 = model1(x1, x2)
+        x_1 = torch.reshape(output1, (output1.size(0), 1, 32, 32))
+        x_2 = torch.reshape(output1, (output2.size(0), 1, 32, 32))
+        x = torch.cat((x_1, x_2), dim = 1)
+        output = model2(x)
+        _, pred1 = torch.max(output, 1)
+        # est1 = torch.squeeze(output2)
 
-        loss1 = loss_cls(output1, labels1)
-        labels2 = labels2.float()
-        loss2 = loss_pre(est1, labels2 )
-        # losses = loss2*10 + loss1
-        losses = loss2
-        losses.backward()
-        optimizer.step()
-        running_loss += loss1.item() * x1.size(0)
-        running_loss2 += loss2.item() * x1.size(0)
+        loss = loss_cls(output, labels1)
+        loss.backward()
+        optimizer1.step()
+        optimizer2.step()
+        running_loss += loss.item() * x1.size(0)
+        # running_loss2 += loss2.item() * x1.size(0)
         running_corrects += torch.sum(pred1 == labels1.data).item()
         print('epoch{}: {}/{} Loss:{:.4f}  ACC:{:.4f}'.format(
             i, step, all,
-            losses.item(),
+            loss.item(),
             torch.sum(pred1 == labels1.data).item()/ x1.size(0))
         )
         step+=1
@@ -139,15 +160,20 @@ for i in range(0, epoch):
         inputs2 = inputs2.to(device)
         labels1_1 = labels1_1.to(device)
         labels1_2 = labels1_2.to(device)
-        labels1_2 = labels1_2.float()
-        optimizer.zero_grad()
-        output1, output2 = model(inputs1, inputs2)
-        # print(output1.size())
-        _, pred1 = torch.max(output1, 1)
+        # labels1_2 = labels1_2.float()
+        optimizer1.zero_grad()
+        optimizer2.zero_grad()
+        output1, output2 = model1(inputs1, inputs2)
+        x_1_ = torch.reshape(output1, (output1.size(0), 1, 32, 32))
+        x_2_ = torch.reshape(output1, (output2.size(0), 1, 32, 32))
+        x_ = torch.cat((x_1_, x_2_), dim=1)
+        output_ = model2(x_)
+        _, pred1 = torch.max(output_, 1)
         # print(pred1.size())
-        losses1_1 = loss_cls(output1, labels1_1)
-        losses1_2 = loss_pre(torch.squeeze(output2), labels1_2)
-        loss_val += losses1_1.item() * inputs1.size(0) + losses1_2.item() * inputs1.size(0)
+        losses1_1 = loss_cls(output_, labels1_1)
+        # losses1_2 = loss_pre(torch.squeeze(output2), labels1_2)
+        loss_val += losses1_1.item() * inputs1.size(0)
+        # loss_val += losses1_1.item() * inputs1.size(0) + losses1_2.item() * inputs1.size(0)
         correct_val += torch.sum(pred1 == labels1_1.data).item()
     val_loss = loss_val / validset_size
     val_acc = correct_val / validset_size
@@ -158,8 +184,10 @@ for i in range(0, epoch):
 
 
     if i%5 == 0:
-        path = '../Parameters/mul_task2/'+'epoch{}'.format(i) + '.pth'
-        torch.save(model.state_dict(), path)
+        path = '../Parameters/mul_task2/'+'epoch_fea_{}'.format(i) + '.pth'
+        torch.save(model1.state_dict(), path)
+        path1 = '../Parameters/mul_task2/' + 'epoch_cls_{}'.format(i) + '.pth'
+        torch.save(model2.state_dict(), path1)
 
 
 
