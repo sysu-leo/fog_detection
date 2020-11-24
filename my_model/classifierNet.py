@@ -132,14 +132,54 @@ class mlp3(nn.Module):
         self.linear1 = nn.Linear(in_features=2048, out_features=1024)
         self.linear2 = nn.Linear(in_features = 1024, out_features = 1024)
         self.linear3 = nn.Linear(in_features=1024, out_features=256)
-        self.linear4 = nn.Linear(in_features=256, out_features = 1)
-    def forward(self, x1, x2, x3):
-
+        self.linear4 = nn.Linear(in_features=256, out_features = 6)
+    def forward(self, x1, x2):
+        tmp_x = torch.tensor([35, 75, 150, 250, 350, 500]).repeat(x1.size(0), 1).t()
         x = torch.cat((x1, x2), dim=1)
-
         x = (F.relu(self.dropout(self.linear1(x))))
         x = (F.relu(self.dropout(self.linear2(x))))
         x = (F.relu(self.dropout(self.linear3(x))))
         x = (F.relu(self.dropout(self.linear4(x))))
+        x = x * tmp_x
         return x
+
+'''classifier Net1
+input:input_channel * wight*height
+output:6classes
+keyPoints:
+(1)GAP
+'''
+
+
+class claasifierNet3(nn.Module):
+    def __init__(self, input_channel):
+        super(claasifierNet3, self).__init__()
+        self.softmax = nn.Softmax(dim = 1)
+        self.classifier = nn.Sequential(
+            nn.Conv2d(in_channels=input_channel, out_channels=128, kernel_size=3,padding=1),
+            nn.BatchNorm2d(128),
+            nn.ELU(inplace=True),
+            nn.Conv2d(in_channels=128, out_channels=64, kernel_size= 3, stride=2, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ELU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+
+        self.classifier2 = nn.Sequential(
+            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3),
+            nn.BatchNorm2d(32),
+            nn.ELU(inplace=True),
+            nn.Conv2d(in_channels=32, out_channels=6, kernel_size=1),
+            nn.ELU(),
+            nn.AdaptiveAvgPool2d((1, 1))
+        )
+
+    def forward(self, x):
+        x = self.classifier(x)
+        x = self.classifier2(x)
+        x = x.view(x.size(0), 1*1*6)
+        #x = self.softmax(x)
+        return x
+
+
 
