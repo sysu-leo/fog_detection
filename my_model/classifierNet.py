@@ -186,8 +186,12 @@ class claasifierNet3(nn.Module):
     def forward(self, x):
         x = self.classifier(x)
         x = self.classifier2(x)
+        tmp_x = torch.tensor([35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 250.0 / 500.0, 350.0 / 500.0, 1.0]).reshape(
+            (6, 1)).to(device)
         x = x.view(x.size(0), 1*1*6)
-        #x = self.softmax(x)
+        x = self.softmax(x)
+        x = torch.mm(x, tmp_x)
+        x = torch.squeeze(x)
         return x
 
 
