@@ -56,7 +56,7 @@ torch.cuda.set_device(device)
 
 
 # load weight
-weight_path = '../Parameters/mul_task/epoch20.pth'
+weight_path = '../Parameters/mul_task2/epoch_fea_20.pth'
 fea_model = FeaModel()
 #cls_model = claasifierNet1(input_channel=2)
 pre_model = mlp3()
@@ -151,7 +151,7 @@ for i in range(0, epoch):
         # _, pred1 = torch.max(output, 1)
 
         # est1 = torch.squeeze(output2)
-
+        labels2 = labels2.float()
         loss = loss_pre(output, labels2)
         loss.backward()
         optimizer1.step()
@@ -199,6 +199,7 @@ for i in range(0, epoch):
         # x_1_ = torch.reshape(output1, (output1.size(0), 1, 32, 32))
         # x_2_ = torch.reshape(output1, (output2.size(0), 1, 32, 32))
         # x_ = torch.cat((x_1_, x_2_), dim=1)
+        labels1_2 = labels1_2.float()
         output_ = pre_model(output1_, output2_)
         # _, pred1 = torch.max(output_, 1)
         # print(pred1.size())
@@ -211,7 +212,7 @@ for i in range(0, epoch):
         correct_val = 0.0
         # release cache
         labels1_1 = labels1_1.to('cpu')
-        labels2_1 = labels2_1.to('cpu')
+        labels2_1 = labels1_2.to('cpu')
         inputs1 = inputs1.to('cpu')
         inputs2 = inputs2.to('cpu')
         output_ = output_.to('cpu')
@@ -227,9 +228,9 @@ for i in range(0, epoch):
 
     if i%5 == 0:
         path = '../Parameters/mul_task3/'+'epoch_fea_{}'.format(i) + '.pth'
-        torch.save(model1.state_dict(), path)
-        path1 = '../Parameters/mul_task3/' + 'epoch_cls_{}'.format(i) + '.pth'
-        torch.save(model2.state_dict(), path1)
+        torch.save(fea_model.state_dict(), path)
+        path1 = '../Parameters/mul_task3/' + 'epoch_pre_{}'.format(i) + '.pth'
+        torch.save(pre_model.state_dict(), path1)
 
 
 

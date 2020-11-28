@@ -9,6 +9,8 @@ output:6classes
 keyPoints:
 (1)GAP
 '''
+device = torch.device("cuda:0")
+
 
 
 class claasifierNet1(nn.Module):
@@ -128,19 +130,26 @@ class mlp3(nn.Module):
     def __init__(self):
         super(mlp3, self).__init__()
         self.dropout = nn.Dropout(0.3)
-        self.softmax = nn.Softmax(dim=2048)
+        self.softmax = nn.Softmax(dim=1)
         self.linear1 = nn.Linear(in_features=2048, out_features=1024)
         self.linear2 = nn.Linear(in_features = 1024, out_features = 1024)
         self.linear3 = nn.Linear(in_features=1024, out_features=256)
         self.linear4 = nn.Linear(in_features=256, out_features = 6)
     def forward(self, x1, x2):
-        tmp_x = torch.tensor([35, 75, 150, 250, 350, 500]).repeat(x1.size(0), 1).t()
+        k = x1.size(0)
+        print(k)
+        x1_ = torch.tensor([35.0/500.0, 75.0/500.0, 150.0/500.0, 250.0/500.0, 350.0/500.0, 1.0])
+        tmp_x = torch.tensor([35.0/500.0, 75.0/500.0, 150.0/500.0, 250.0/500.0, 350.0/500.0, 1.0]).reshape((6, 1)).to(device)
+        print(tmp_x.size())
         x = torch.cat((x1, x2), dim=1)
         x = (F.relu(self.dropout(self.linear1(x))))
         x = (F.relu(self.dropout(self.linear2(x))))
         x = (F.relu(self.dropout(self.linear3(x))))
         x = (F.relu(self.dropout(self.linear4(x))))
-        x = x * tmp_x
+        x = self.softmax(x)
+        print(x.size())
+        x = torch.mm(x,tmp_x)
+        x = torch.squeeze(x)
         return x
 
 '''classifier Net1
