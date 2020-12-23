@@ -9,7 +9,7 @@
 
 import torch
 import torch.nn as nn
-
+from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
 
 class BasicConv2d(nn.Module):
 
@@ -31,6 +31,7 @@ class InceptionA(nn.Module):
 
     def __init__(self, input_channels, pool_features):
         super().__init__()
+
         self.branch1x1 = BasicConv2d(input_channels, 64, kernel_size=1)
 
         self.branch5x5 = nn.Sequential(
@@ -247,6 +248,8 @@ class InceptionV3(nn.Module):
 
     def __init__(self, num_classes=6):
         super().__init__()
+        self.task1 = FogLevel_Classify(input_channel=1)
+        self.task2 = VisDistance_Estimation(input_channel=1)
         self.Conv2d_1a_3x3 = BasicConv2d(3, 32, kernel_size=3, padding=1)
         self.Conv2d_2a_3x3 = BasicConv2d(32, 32, kernel_size=3, padding=1)
         self.Conv2d_2b_3x3 = BasicConv2d(32, 64, kernel_size=3, padding=1)
@@ -275,7 +278,7 @@ class InceptionV3(nn.Module):
         #6*6 feature size
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.dropout = nn.Dropout2d()
-        self.linear = nn.Linear(2048, num_classes)
+        self.linear = nn.Linear(2048, 1024)
 
     def forward(self, x):
 
@@ -324,8 +327,12 @@ class InceptionV3(nn.Module):
         x = self.avgpool(x)
         x = self.dropout(x)
         x = x.view(x.size(0), -1)
-        x = self.linear(x)
-        return x
+        d_x = self.linear(x)
+        d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
+
+        fog_level = self.task1(d_x)
+        vis_ditance = self.task2(d_x)
+        return fog_level, vis_ditance
 
 
 def inceptionv3():

@@ -11,6 +11,7 @@
 
 import torch
 import torch.nn as nn
+from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
 
 class Inception(nn.Module):
     def __init__(self, input_channels, n1x1, n3x3_reduce, n3x3, n5x5_reduce, n5x5, pool_proj):
@@ -66,6 +67,8 @@ class GoogleNet(nn.Module):
 
     def __init__(self, num_class=100):
         super().__init__()
+        self.task1 = FogLevel_Classify(input_channel=1)
+        self.task2 = VisDistance_Estimation(input_channel=1)
         self.prelayer = nn.Sequential(
             nn.Conv2d(3, 192, kernel_size=3, padding=1),
             nn.BatchNorm2d(192),
@@ -95,7 +98,7 @@ class GoogleNet(nn.Module):
         #input feature size: 8*8*1024
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.dropout = nn.Dropout2d(p=0.4)
-        self.linear = nn.Linear(1024, num_class)
+        self.linear = nn.Linear(1024, 1024)
 
     def forward(self, x):
         output = self.prelayer(x)
@@ -122,9 +125,12 @@ class GoogleNet(nn.Module):
         output = self.avgpool(output)
         output = self.dropout(output)
         output = output.view(output.size()[0], -1)
-        output = self.linear(output)
+        d_x = self.linear(output)
+        d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
 
-        return output
+        fog_level = self.task1(d_x)
+        vis_ditance = self.task2(d_x)
+        return fog_level, vis_ditance
 
 def googlenet():
     return GoogleNet()

@@ -4,6 +4,8 @@ import os
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
+from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
+
 
 current_dir = os.getcwd()    # obtain work dir
 sys.path.append(current_dir) # add work dir to sys path
@@ -40,6 +42,8 @@ class LRN(nn.Module):
 class AlexNet(nn.Module):
     def __init__(self, num_classes=1000):
         super(AlexNet, self).__init__()
+        self.task1 = FogLevel_Classify(input_channel=1)
+        self.task2 = VisDistance_Estimation(input_channel=1)
         self.features = nn.Sequential(
             # the first layer net
             # 3 inputs channel, 96 output channel, filter kernel size is 11*11, stride is 4, padding is 0
@@ -78,14 +82,17 @@ class AlexNet(nn.Module):
             nn.Dropout(),
 
             # the eigth
-            nn.Linear(4096, num_classes),
+            nn.Linear(4096, 1024),
         )
 
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), 256 * 6 * 6)
-        x = self.classifier(x)
-        return x
+        d_x = self.classifier(x)
+        d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
 
+        fog_level = self.task1(d_x)
+        vis_ditance = self.task2(d_x)
+        return fog_level, vis_ditance
 
 

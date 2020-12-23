@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision
 import numpy as np
+from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
 
 
 __all__ = ['ResNet50', 'ResNet101','ResNet152']
@@ -52,6 +53,8 @@ class ResNet(nn.Module):
     def __init__(self,blocks, num_classes=1000, expansion = 4):
         super(ResNet,self).__init__()
         self.expansion = expansion
+        self.task1 = FogLevel_Classify(input_channel=1)
+        self.task2 = VisDistance_Estimation(input_channel=1)
 
         self.conv1 = Conv1(in_planes = 3, places= 64)
 
@@ -61,7 +64,7 @@ class ResNet(nn.Module):
         self.layer4 = self.make_layer(in_places=1024,places=512, block=blocks[3], stride=2)
 
         self.avgpool = nn.AvgPool2d(7, stride=1)
-        self.fc = nn.Linear(2048,num_classes)
+        self.fc = nn.Linear(2048,1024)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -89,8 +92,12 @@ class ResNet(nn.Module):
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return x
+        d_x = self.fc(x)
+        d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
+
+        fog_level = self.task1(d_x)
+        vis_ditance = self.task2(d_x)
+        return fog_level, vis_ditance
 
 def ResNet50():
     return ResNet([3, 4, 6, 3])

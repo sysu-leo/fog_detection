@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+device = torch.device("cuda:0")
 class FogLevel_Classify(nn.Module):
 
     def __init__(self, input_channel=2):
@@ -64,4 +64,5 @@ class VisDistance_Estimation(nn.Module):
         x = torch.mm(x, tmp_x)
         x = torch.squeeze(x)
         return x
+
 
