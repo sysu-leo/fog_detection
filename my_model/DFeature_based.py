@@ -11,7 +11,7 @@ class Multi_Task(nn.Module):
         self.task2 = VisDistance_Estimation(input_channel=1)
 
     def forward(self, x1, x2):
-        d_x = self.d_feature(x1)
+        d_x = self.d_feature(x2)
         d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
 
         fog_level = self.task1(d_x)
