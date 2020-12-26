@@ -1,4 +1,4 @@
-from Dataset.myDataSet3 import MyDataSet
+from Dataset.myDataSet import MyDataSet
 from model.inception_resnet_v2 import Inception_ResNetv2
 import torchvision.transforms as transforms
 import torch.utils.data as data

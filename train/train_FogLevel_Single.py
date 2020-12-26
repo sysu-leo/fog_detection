@@ -1,5 +1,5 @@
 from my_model.FogLevel_Single import FogLevel_Single
-from Dataset.myDataSet2 import MyDataSet
+from Dataset.myDataSet import MyDataSet
 
 import torchvision.transforms as transforms
 import torch.utils.data as data

@@ -1,11 +1,10 @@
-from Dataset.myDataSet3 import MyDataSet
-from model.inceptionv4 import Inceptionv4
+from Dataset.myDataSet import MyDataSet
+from model.inceptionv3 import InceptionV3
 import torchvision.transforms as transforms
 import torch.utils.data as data
 import torch.nn as nn
 import torch.optim
 import os
-from torchsummary import summary
 from configparser import ConfigParser
 
 # read parameters
@@ -54,7 +53,7 @@ torch.cuda.set_device(device)
 
 
 # load weight
-model = Inceptionv4()
+model = Inceptionv3()
 model.to(device)
 #model.load_state_dict(torch.load(weight_path))
 #summary(model.cuda(),  (3, 224, 224))

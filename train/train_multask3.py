@@ -1,5 +1,5 @@
 from my_model.MLT_TASK import MulTask
-from Dataset.myDataSet2 import MyDataSet
+from Dataset.myDataSet import MyDataSet
 import torchvision.transforms as transforms
 import torch.utils.data as data
 import torch.nn as nn

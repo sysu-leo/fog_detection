@@ -9,7 +9,7 @@ from my_model.rgbdNet2 import testrgbdNet2
 from script.getRes import gerRes
 
 
-from Dataset.myDataSet2 import MyDataSet
+from Dataset.myDataSet import MyDataSet
 
 
 import torchvision

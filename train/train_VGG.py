@@ -1,12 +1,10 @@
-from my_model.rgbdNet1 import testrgbdNet1
-from Dataset.myDataSet3 import MyDataSet
+from Dataset.myDataSet import MyDataSet
 from model.VGG16 import Vgg16
 import torchvision.transforms as transforms
 import torch.utils.data as data
 import torch.nn as nn
 import torch.optim
 import os
-from torchsummary import summary
 from configparser import ConfigParser
 
 # read parameters
