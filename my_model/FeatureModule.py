@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from my_model.classifierNet import claasifierNet1
 import torch.nn.functional as F
 
 '''rgbd_feature_exactor

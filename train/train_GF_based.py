@@ -33,23 +33,17 @@ simple_transform = transforms.Compose(
 
 trainset = MyDataSet(
     root=cp.get(section, 'root'),
-    file_rgb = cp.get(section, 'RGD_data'),
-    file_d = cp.get(section, 'dark_data'),
-    file_slice=cp.get(section, 'slice_data'),
     datatxt=cp.get(section, 'train'),
     tranform=simple_transform
 )
 validset = MyDataSet(
     root=cp.get(section, 'root'),
-    file_rgb=cp.get(section, 'RGD_data'),
-    file_d=cp.get(section, 'dark_data'),
-    file_slice=cp.get(section, 'slice_data'),
     datatxt=cp.get(section, 'valid'),
     tranform=simple_transform
 )
 
 # set gpu_device
-device = torch.device("cuda:0")
+device = torch.device("cuda:1")
 torch.cuda.set_device(device)
 
 
@@ -123,21 +117,23 @@ for i in range(0, epoch):
     step = 0
     all = int(trainset_size / batchsize +1)
     for _, x1, x2, labels_cls, labels_reg in train_loader1:
-        #data input
+        # data input
         labels_cls = labels_cls.to(device)
         labels_reg = labels_reg.to(device)
         x1 = x1.to(device)
         x2 = x2.to(device)
-        #data output
+        # data output
         optimizer_cls.zero_grad()
         optimizer_pre.zero_grad()
 
         cls_out, pre_out = model(x1, x2)
         _, pred = torch.max(cls_out, 1)
-        #loss calculation
+        # loss calculation
         losses_cls = loss_cls(cls_out, labels_cls)
-        losses_cls.backward()
+        labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
+        loss_all = 10 * losses_pre + losses_cls
+        loss_all.backward()
         optimizer_cls.step()
         optimizer_pre.step()
 
@@ -149,10 +145,10 @@ for i in range(0, epoch):
             i, step, all,
             losses_cls.item(),
             losses_pre.item(),
-            torch.sum(pred == labels_cls.data).item()/ x1.size(0))
+            torch.sum(pred == labels_cls.data).item() / x1.size(0))
         )
 
-        #release cache
+        # release cache
         labels_cls = labels_cls.to('cpu')
         labels_reg = labels_reg.to('cpu')
         x1 = x1.to('cpu')
@@ -177,11 +173,11 @@ for i in range(0, epoch):
         inputs2 = inputs2.to(device)
         labels1_cls = labels1_cls.to(device)
         labels1_reg = labels1_reg.to(device)
-        # labels1_2 = labels1_2.float()
+        labels1_reg = labels1_reg.float()
         optimizer_cls.zero_grad()
         optimizer_pre.zero_grad()
 
-        output_cls, output_pre= model(inputs1, inputs2)
+        output_cls, output_pre = model(inputs1, inputs2)
         _, pred1 = torch.max(output_cls, 1)
         losses1_cls = loss_cls(output_cls, labels1_cls)
         loss_val_cls += losses1_cls.item() * inputs1.size(0)
@@ -206,10 +202,8 @@ for i in range(0, epoch):
 
 
     if i%10 == 0:
-        path = '../Parameters/mul_task4/'+'epoch_fea_{}'.format(i) + '.pth'
+        path = '../Parameters/GFBM/'+'epoch_{}'.format(i) + '.pth'
         torch.save(model.state_dict(), path)
-        path1 = '../Parameters/mul_task4/' + 'epoch_pre_{}'.format(i) + '.pth'
-        torch.save(model.state_dict(), path1)
 
 
 

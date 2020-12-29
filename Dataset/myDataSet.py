@@ -14,12 +14,12 @@ def minFilter(src, r = 7):
 class MyDataSet(data.Dataset):
     def __init__(self, root, datatxt, tranform = None, target_transform = None):
         super(MyDataSet, self).__init__()
-        fh = open(os.path.join(root, datatxt), 'r')
+        fh = open(datatxt, 'r')
         labels = []
         for line in fh.readlines():
             tlist = line.strip().split('.')[0].split('-')
             cls = int(tlist[0])
-            pre = float(tlist[-1])/ 500.0
+            pre = float(int(tlist[-1]))/ 500.0
             rgb_path = os.path.join(root, 'SCENE_1',str(cls), line.strip())
             dark_path = os.path.join(root, 'SCENE_1_dark',str(cls),  line.strip())
             slice_path = os.path.join(root, 'SCENE_1_slice',str(cls),  line.strip())

@@ -33,17 +33,11 @@ simple_transform = transforms.Compose(
 
 trainset = MyDataSet(
     root=cp.get(section, 'root'),
-    file_rgb = cp.get(section, 'RGD_data'),
-    file_d = cp.get(section, 'dark_data'),
-    file_slice=cp.get(section, 'slice_data'),
     datatxt=cp.get(section, 'train'),
     tranform=simple_transform
 )
 validset = MyDataSet(
     root=cp.get(section, 'root'),
-    file_rgb=cp.get(section, 'RGD_data'),
-    file_d=cp.get(section, 'dark_data'),
-    file_slice=cp.get(section, 'slice_data'),
     datatxt=cp.get(section, 'valid'),
     tranform=simple_transform
 )
@@ -173,10 +167,8 @@ for i in range(0, epoch):
 
 
     if i%10 == 0:
-        path = '../Parameters/mul_task4/'+'epoch_fea_{}'.format(i) + '.pth'
+        path = '/home/dell/Documents/Parameters/fog_level_single/'+'epoch_{}'.format(i) + '.pth'
         torch.save(model.state_dict(), path)
-        path1 = '../Parameters/mul_task4/' + 'epoch_pre_{}'.format(i) + '.pth'
-        torch.save(model.state_dict(), path1)
 
 
 

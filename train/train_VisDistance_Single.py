@@ -33,23 +33,17 @@ simple_transform = transforms.Compose(
 
 trainset = MyDataSet(
     root=cp.get(section, 'root'),
-    file_rgb = cp.get(section, 'RGD_data'),
-    file_d = cp.get(section, 'dark_data'),
-    file_slice=cp.get(section, 'slice_data'),
     datatxt=cp.get(section, 'train'),
     tranform=simple_transform
 )
 validset = MyDataSet(
     root=cp.get(section, 'root'),
-    file_rgb=cp.get(section, 'RGD_data'),
-    file_d=cp.get(section, 'dark_data'),
-    file_slice=cp.get(section, 'slice_data'),
     datatxt=cp.get(section, 'valid'),
     tranform=simple_transform
 )
 
 # set gpu_device
-device = torch.device("cuda:0")
+device = torch.device("cuda:1")
 torch.cuda.set_device(device)
 
 
@@ -113,6 +107,7 @@ for i in range(0, epoch):
         optimizer_pre.zero_grad()
         pre_out = model(x1, x2)
         #loss calculation
+        labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
         losses_pre.backward()
         optimizer_pre.step()
@@ -145,11 +140,10 @@ for i in range(0, epoch):
         inputs2 = inputs2.to(device)
         labels1_cls = labels1_cls.to(device)
         labels1_reg = labels1_reg.to(device)
-        # labels1_2 = labels1_2.float()
         optimizer_pre.zero_grad()
-
+        labels1_reg = labels1_reg.float()
         output_pre = model(inputs1, inputs2)
-        losses1_pre = loss_pre(output_pre, labels1_cls)
+        losses1_pre = loss_pre(output_pre, labels1_reg)
         loss_val += losses1_pre.item() * inputs1.size(0)
 
         # release cache
@@ -166,10 +160,8 @@ for i in range(0, epoch):
 
 
     if i%10 == 0:
-        path = '../Parameters/mul_task4/'+'epoch_fea_{}'.format(i) + '.pth'
+        path = '/home/dell/Documents/Parameters/vis_single/'+'epoch_{}'.format(i) + '.pth'
         torch.save(model.state_dict(), path)
-        path1 = '../Parameters/mul_task4/' + 'epoch_pre_{}'.format(i) + '.pth'
-        torch.save(model.state_dict(), path1)
 
 
 
