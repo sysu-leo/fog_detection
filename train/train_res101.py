@@ -1,5 +1,5 @@
 from Dataset.myDataSet2 import MyDataSet
-from model.VGG16 import Vgg16
+from model.ResNet import ResNet101
 import torchvision.transforms as transforms
 import torch.utils.data as data
 import torch.nn as nn
@@ -19,8 +19,8 @@ batchsize = cp.getint(section, 'batchsize')
 
 #记录训练数据
 
-file_train = open(cp.get(section, 'acc_vgg16_train'), 'w')
-file_valid = open(cp.get(section, 'acc_vgg16_valid'), 'w')
+file_train = open(cp.get(section, 'acc_res101_train'), 'w')
+file_valid = open(cp.get(section, 'acc_res101_valid'), 'w')
 
 #read data
 
@@ -43,12 +43,12 @@ validset = MyDataSet(
 )
 
 # load_model and set gpu_device
-device = torch.device("cuda:1")
+device = torch.device("cuda:0")
 torch.cuda.set_device(device)
 
 
 # load weight
-model = Vgg16()
+model = ResNet101()
 model = model.to(device)
 #model.load_state_dict(torch.load(weight_path))
 
@@ -198,6 +198,6 @@ for i in range(0, epoch):
 
 
     if i%10 == 0:
-        path = '/home/dell/Documents/Parameters/VGG16/'+'epoch_{}'.format(i) + '.pth'
+        path = '/home/dell/Documents/Parameters/RES101/'+'epoch_{}'.format(i) + '.pth'
         torch.save(model.state_dict(), path)
 

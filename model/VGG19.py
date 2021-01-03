@@ -117,7 +117,7 @@ class Vgg19(nn.Module):
             nn.Linear(4096, 1024)
         )
 
-    def forward(self, x):
+    def forward(self, x, y):
         x = self.conv_layer(x)
         x = x.view(x.size(0), 7*7*512)
         d_x = self.fc(x)

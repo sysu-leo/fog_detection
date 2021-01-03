@@ -202,7 +202,7 @@ for i in range(0, epoch):
 
 
     if i%10 == 0:
-        path = '../Parameters/GFBM/'+'epoch_{}'.format(i) + '.pth'
+        path = '/home/dell/Documents/Parameters/GFBM/'+'epoch_{}'.format(i) + '.pth'
         torch.save(model.state_dict(), path)
 
 
