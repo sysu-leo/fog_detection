@@ -54,12 +54,13 @@ class VisDistance_Estimation(nn.Module):
             nn.ELU(),
             nn.AdaptiveAvgPool2d((1, 1))
         )
-    def forward(self, x):
+    def forward(self, x, y):
         x = self.classifier(x)
         x = self.classifier2(x)
         tmp_x = torch.tensor([35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 350.0 / 500.0, 1.0]).reshape(
             (5, 1)).to(device)
         x = x.view(x.size(0), 1 * 1 * 5)
+        x = torch.mul(x, y)
         x = torch.mm(x, tmp_x)
         x = torch.squeeze(x)
         return x
