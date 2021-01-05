@@ -12,17 +12,14 @@ from configparser import ConfigParser
 cp = ConfigParser()
 cp.read("./param.cfg")
 section =cp.sections()[0]
-anchors = cp.get(section, "Anchors")
-anchors_list = [int(i) for i in anchors.strip().split(',')]
-epoch = cp.getint(section, 'epoch')
 batchsize = cp.getint(section, 'batchsize')
 
 #记录训练数据
 
-file = ''
-epoch = ''
-result_file = open('../test/result_' + file +'_' + epoch + '.txt', 'w')
-statistics_file = open('../test/statistics_' + file +'_' + epoch + '.txt', 'w')
+file = 'mul_task_mb'
+epoch = '40'
+result_file = open('../test_data/result_' + file +'_' + epoch + '.txt', 'w')
+statistics_file = open('../test_data/statistics_' + file +'_' + epoch + '.txt', 'w')
 
 #read data
 
@@ -40,12 +37,12 @@ testset = MyDataSet(
 )
 
 # set gpu_device
-device = torch.device("cuda:1")
+device = torch.device("cuda:0")
 torch.cuda.set_device(device)
 
 
 # load weight
-weight_path = '../Parameters/' + file + '/epoch_' + epoch + '.pth'
+weight_path = '/home/dell/Documents/Parameters/' + file + '/epoch_' + epoch + '.pth'
 model = Multi_Task()
 model = model.to(device)
 model.load_state_dict(torch.load(weight_path))
@@ -61,29 +58,39 @@ testset_size = len(testset)
 res_dict = {0 : [0, 0, 0, 0, 0], 1:[0, 0, 0, 0, 0], 2:[0, 0, 0, 0, 0], 3:[0,0,0,0,0], 4:[0,0,0,0,0]}
 average_error = 0.0
 # test
-for img_names, x1, x2, labels_cls, labels_reg in test_loader:
-    #data input
-    labels_cls = labels_cls
-    labels_reg = labels_reg
-    x1 = x1.to(device)
-    x2 = x2.to(device)
+with torch.no_grad():
+    for img_names, x1, x2, labels_cls, labels_reg in test_loader:
+        #data input
+        labels_cls = labels_cls
+        labels_reg = labels_reg
+        x1 = x1.to(device)
+        x2 = x2.to(device)
 
-    cls_out, pre_out = model(x1, x2)
-    cls_out = cls_out.to('cpu')
-    pre_out = pre_out.to('cpu')
-    _, pred = torch.max(cls_out, 1)
+        cls_out, pre_out = model(x1, x2)
+        cls_out = cls_out.to('cpu')
+        pre_out = pre_out.to('cpu')
+        _, pred = torch.max(cls_out, 1)
 
-    
+        x1 = x1.to('cpu')
+        x2 = x2.to('cpu')
+        torch.cuda.empty_cache()
 
-    for i in range(batchsize):
-        img_name = img_names[i]
-        level = int(labels_cls[i])
-        vis = labels_reg[i]
-        pre_level = int(cls_out[i])
-        pre_vis = pre_out[i]
-        result_file.write(img_name+ ' ' + str(level) + ' ' + str(pre_level) + ' ' + str(vis) + ' ' + str(pre_vis) + '\n')
-        res_dict[level][pre_level] += 1
-        average_error += abs((pre_vis -  vis))
+
+        if len(img_names) < batchsize:
+            continue
+        for i in range(batchsize):
+            try:
+                img_name = img_names[i]
+                level = int(labels_cls[i])
+                vis = labels_reg[i].float()
+                pre_level = int(pred[i])
+                pre_vis = pre_out[i].float()
+                result_file.write(img_name+ ' ' + str(level) + ' ' + str(pre_level) + ' ' + str(vis) + ' ' + str(pre_vis) + '\n')
+                res_dict[level][pre_level] += 1
+                average_error += abs((pre_vis -  vis))
+            except:
+                print('error')
+
 sum1= []
 for i in range(5):
     t_sum = 0

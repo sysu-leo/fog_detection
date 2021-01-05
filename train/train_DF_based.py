@@ -76,7 +76,7 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 )
 
 
-loss_pre = nn.SmoothL1Loss()
+loss_pre = nn.L1Loss()
 
 # set optimizer
 optimizer_pre = torch.optim.SGD(

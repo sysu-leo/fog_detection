@@ -43,7 +43,7 @@ validset = MyDataSet(
 )
 
 # set gpu_device
-device = torch.device("cuda:1")
+device = torch.device("cuda:0")
 torch.cuda.set_device(device)
 
 
@@ -76,7 +76,7 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 )
 
 
-loss_pre = nn.SmoothL1Loss()
+loss_pre = nn.L1Loss()
 
 # set optimizer
 optimizer_pre = torch.optim.SGD(
@@ -144,7 +144,7 @@ for i in range(0, epoch):
         print('epoch{}: {}/{} Loss_Cls:{:.4f} Loss_Pre:{:.4f} ACC:{:.4f}'.format(
             i, step, all,
             losses_cls.item(),
-            losses_pre.item(),
+            losses_pre.item() * 500,
             torch.sum(pred == labels_cls.data).item() / x1.size(0))
         )
 
@@ -161,7 +161,7 @@ for i in range(0, epoch):
     epoch_loss_cls = running_loss_cls / trainset_size
     epoch_loss_pre = running_loss_pre / trainset_size
     epoch_acc = running_corrects / trainset_size
-    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre, epoch_acc))
+    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre * 500, epoch_acc))
     file_train.write('{} {:.4f} {:.4f} {:.4f}\n'.format(i, epoch_loss_cls, epoch_loss_pre, epoch_acc))
 
     # valid

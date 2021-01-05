@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-device = torch.device("cuda:0")
+device = torch.device("cuda:1")
 class FogLevel_Classify(nn.Module):
 
     def __init__(self, input_channel=2):
@@ -50,17 +50,16 @@ class VisDistance_Estimation(nn.Module):
             nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3),
             nn.BatchNorm2d(32),
             nn.ELU(inplace=True),
-            nn.Conv2d(in_channels=32, out_channels=6, kernel_size=1),
+            nn.Conv2d(in_channels=32, out_channels=5, kernel_size=1),
             nn.ELU(),
             nn.AdaptiveAvgPool2d((1, 1))
         )
     def forward(self, x):
         x = self.classifier(x)
         x = self.classifier2(x)
-        tmp_x = torch.tensor([35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 250.0 / 500.0, 350.0 / 500.0, 1.0]).reshape(
-            (6, 1)).to(device)
-        x = x.view(x.size(0), 1 * 1 * 6)
-        x = self.softmax(x)
+        tmp_x = torch.tensor([35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 350.0 / 500.0, 1.0]).reshape(
+            (5, 1)).to(device)
+        x = x.view(x.size(0), 1 * 1 * 5)
         x = torch.mm(x, tmp_x)
         x = torch.squeeze(x)
         return x

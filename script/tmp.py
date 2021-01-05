@@ -1,17 +1,17 @@
 import shutil
 import random
 
-file1 = open('/home/liqiang/Documents/lstron_data/data/valid.txt', 'r')
+file1 = open('/home/dell/Documents/fog_detection/Dataset/test.txt', 'r')
 ttlist1 = file1.readlines()
 
 file1.close()
 
-file2 = open('/home/liqiang/Documents/lstron_data/data/train.txt', 'r')
+file2 = open('/home/dell/Documents/fog_detection/Dataset/train.txt', 'r')
 ttlist2 = file2.readlines()
 file2.close()
 
-file1 = open('/home/liqiang/Documents/lstron_data/data/valid.txt', 'w')
-file2 = open('/home/liqiang/Documents/lstron_data/data/train.txt', 'w')
+file1 = open('/home/dell/Documents/fog_detection/Dataset/test.txt', 'w')
+file2 = open('/home/dell/Documents/fog_detection/Dataset/train.txt', 'w')
 
 random.shuffle(ttlist1)
 random.shuffle(ttlist1)

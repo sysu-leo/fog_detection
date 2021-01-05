@@ -6,7 +6,7 @@ from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
 class Multi_Task(nn.Module):
     def __init__(self):
         super(Multi_Task, self).__init__()
-        self.d_feature = d_exactor()
+        self.d_feature = g_exactor(in_chanel=3)
         self.task1 = FogLevel_Classify(input_channel=1)
         self.task2 = VisDistance_Estimation(input_channel=1)
 

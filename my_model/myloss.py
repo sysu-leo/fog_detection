@@ -3,7 +3,9 @@ import torch.nn as nn
 
 class Relative_loss(nn.Module):
     def __init__(self):
-        super().__init__()
+        super(Relative_loss, self).__init__()
         
     def forward(self, y, y_pre):
-        return torch.mean(torch.pow((y - y_pre), 2)) / y
+        pp = torch.div(torch.abs(y - y_pre), y)
+        sum = torch.mean(pp)
+        return sum

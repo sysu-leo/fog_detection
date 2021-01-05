@@ -1,4 +1,5 @@
 from my_model.DisEstimation_Single import DisEstimation_Single
+from my_model.myloss import Relative_loss
 from Dataset.myDataSet import MyDataSet
 
 import torchvision.transforms as transforms
@@ -58,7 +59,7 @@ model = model.to(device)
 
 # set loss_function
 
-loss_pre = nn.SmoothL1Loss()
+loss_pre = nn.L1Loss()
 
 # set optimizer
 optimizer_pre = torch.optim.SGD(

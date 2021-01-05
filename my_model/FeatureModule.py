@@ -19,7 +19,7 @@ class g_exactor(nn.Module):
         self.in_chanel = in_chanel
         self.out_chanel = out_chanel
         self.FeatureMap = nn.Sequential(
-            nn.Conv2d(in_channels=4, out_channels=96, kernel_size=5, stride=4, padding=4,dilation=2),
+            nn.Conv2d(in_channels=in_chanel, out_channels=96, kernel_size=5, stride=4, padding=4,dilation=2),
             nn.BatchNorm2d(96),
             nn.ELU(inplace=True),#112*112
             nn.Conv2d(in_channels=96, out_channels=256, kernel_size=3, stride=2, padding=2, dilation=2),

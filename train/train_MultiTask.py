@@ -1,4 +1,5 @@
 from my_model.MultiTask import Multi_Task
+from my_model.myloss import Relative_loss
 from Dataset.myDataSet import MyDataSet
 
 import torchvision.transforms as transforms
@@ -76,7 +77,7 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 )
 
 
-loss_pre = nn.SmoothL1Loss()
+loss_pre = nn.L1Loss()
 
 # set optimizer
 optimizer_pre = torch.optim.SGD(
@@ -132,7 +133,7 @@ for i in range(0, epoch):
         losses_cls = loss_cls(cls_out, labels_cls)
         labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
-        loss_all = 10 * losses_pre + losses_cls
+        loss_all = 5*losses_pre + losses_cls
         loss_all.backward()
         optimizer_cls.step()
         optimizer_pre.step()
@@ -161,7 +162,7 @@ for i in range(0, epoch):
     epoch_loss_cls = running_loss_cls / trainset_size
     epoch_loss_pre = running_loss_pre / trainset_size
     epoch_acc = running_corrects / trainset_size
-    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre, epoch_acc))
+    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre , epoch_acc))
     file_train.write('{} {:.4f} {:.4f} {:.4f}\n'.format(i, epoch_loss_cls, epoch_loss_pre, epoch_acc))
 
     # valid
