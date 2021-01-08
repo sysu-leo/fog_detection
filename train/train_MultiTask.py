@@ -49,10 +49,10 @@ torch.cuda.set_device(device)
 
 
 # load weight
-#weight_path = '../Parameters/mul_task2/epoch_fea_20.pth'
+#weight_path = '/home/dell/Documents/Parameters/mul_task_mb/epoch_260.pth'
 model = Multi_Task()
 model = model.to(device)
-# fea_model.load_state_dict(torch.load(weight_path))
+#model.load_state_dict(torch.load(weight_path))
 #summary(model.cuda(),  ((4, 448, 448), (3, 488, 488)))
 # print(model)
 
@@ -60,6 +60,8 @@ model = model.to(device)
 # set loss_function
 
 loss_cls = nn.CrossEntropyLoss()
+
+loss_re = Relative_loss()
 
 # set optimizer
 optimizer_cls = torch.optim.SGD(
@@ -80,19 +82,19 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 loss_pre = nn.L1Loss()
 
 # set optimizer
-optimizer_pre = torch.optim.SGD(
-    model.parameters(),
-    lr=cp.getfloat(section, 'lr2'),
-    momentum=cp.getfloat(section,'momentum'),
-    weight_decay=cp.getfloat(section, 'weight_decay')
-)
-
-# set schecual
-scheduler_pre = torch.optim.lr_scheduler.StepLR(
-    optimizer_pre,
-    step_size =cp.getint(section, 'step_size'),
-    gamma = cp.getfloat(section, 'gamma')
-)
+# optimizer_pre = torch.optim.SGD(
+#     model.parameters(),
+#     lr=cp.getfloat(section, 'lr2'),
+#     momentum=cp.getfloat(section,'momentum'),
+#     weight_decay=cp.getfloat(section, 'weight_decay')
+# )
+#
+# # set schecual
+# scheduler_pre = torch.optim.lr_scheduler.StepLR(
+#     optimizer_pre,
+#     step_size =cp.getint(section, 'step_size'),
+#     gamma = cp.getfloat(section, 'gamma')
+# )
 
 
 # load data
@@ -125,7 +127,7 @@ for i in range(0, epoch):
         x2 = x2.to(device)
         #data output
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
         cls_out, pre_out = model(x1, x2)
         _, pred = torch.max(cls_out, 1)
@@ -133,10 +135,12 @@ for i in range(0, epoch):
         losses_cls = loss_cls(cls_out, labels_cls)
         labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
-        loss_all = 5*losses_pre + losses_cls
+        # loss_all = 5*losses_pre + losses_cls
+
+        loss_all = loss_re(pre_out, labels_reg, cls_out, labels_cls)
         loss_all.backward()
         optimizer_cls.step()
-        optimizer_pre.step()
+        # optimizer_pre.step()
 
         running_loss_cls += losses_cls.item() * x1.size(0)
         running_loss_pre += losses_pre.item() * x1.size(0)
@@ -176,7 +180,7 @@ for i in range(0, epoch):
         labels1_reg = labels1_reg.to(device)
         labels1_reg = labels1_reg.float()
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
         output_cls, output_pre= model(inputs1, inputs2)
         _, pred1 = torch.max(output_cls, 1)

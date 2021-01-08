@@ -7,7 +7,7 @@ class FogLevel_Single(nn.Module):
     def __init__(self):
         super(FogLevel_Single, self).__init__()
         self.g_feature = g_exactor()
-        self.d_feature = d_exactor()
+        self.d_feature = g_exactor(in_chanel=3)
         self.task = FogLevel_Classify()
 
     def forward(self, x1, x2):

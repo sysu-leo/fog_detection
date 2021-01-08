@@ -1,4 +1,6 @@
 from my_model.MultiTask import Multi_Task
+#from my_model.GFeature_based import Multi_Task
+#from my_model.DFeature_based import Multi_Task
 from Dataset.myDataSet import MyDataSet
 
 import torchvision.transforms as transforms
@@ -16,8 +18,10 @@ batchsize = cp.getint(section, 'batchsize')
 
 #记录训练数据
 
+#file = 'GFBM'
+#file = 'DFBM'
 file = 'mul_task_mb'
-epoch = '40'
+epoch = '20'
 result_file = open('../test_data/result_' + file +'_' + epoch + '.txt', 'w')
 statistics_file = open('../test_data/statistics_' + file +'_' + epoch + '.txt', 'w')
 
@@ -87,7 +91,7 @@ with torch.no_grad():
                 pre_vis = pre_out[i].float()
                 result_file.write(img_name+ ' ' + str(level) + ' ' + str(pre_level) + ' ' + str(vis) + ' ' + str(pre_vis) + '\n')
                 res_dict[level][pre_level] += 1
-                average_error += abs((pre_vis -  vis))
+                average_error += float(abs((pre_vis -  vis)))/float(vis)
             except:
                 print('error')
 
@@ -145,7 +149,7 @@ statistics_file.write(line_13)
 statistics_file.write(line_14)
 statistics_file.write(line_15)
 statistics_file.write(line_16)
-statistics_file.write(line_19)
+statistics_file.write(line_17)
 statistics_file.write(line_18)
 statistics_file.write(line_19)
 

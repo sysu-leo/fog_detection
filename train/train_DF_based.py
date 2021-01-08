@@ -1,5 +1,6 @@
 from my_model.DFeature_based import Multi_Task
 from Dataset.myDataSet import MyDataSet
+from my_model.myloss import Relative_loss
 
 import torchvision.transforms as transforms
 import torch.utils.data as data
@@ -78,21 +79,22 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 
 loss_pre = nn.L1Loss()
 
+loss_re = Relative_loss()
 # set optimizer
-optimizer_pre = torch.optim.SGD(
-    model.parameters(),
-    lr=cp.getfloat(section, 'lr2'),
-    momentum=cp.getfloat(section,'momentum'),
-    weight_decay=cp.getfloat(section, 'weight_decay')
-)
-
-# set schecual
-scheduler_pre = torch.optim.lr_scheduler.StepLR(
-    optimizer_pre,
-    step_size =cp.getint(section, 'step_size'),
-    gamma = cp.getfloat(section, 'gamma')
-)
-
+# optimizer_pre = torch.optim.SGD(
+#     model.parameters(),
+#     lr=cp.getfloat(section, 'lr2'),
+#     momentum=cp.getfloat(section,'momentum'),
+#     weight_decay=cp.getfloat(section, 'weight_decay')
+# )
+#
+# # set schecual
+# scheduler_pre = torch.optim.lr_scheduler.StepLR(
+#     optimizer_pre,
+#     step_size =cp.getint(section, 'step_size'),
+#     gamma = cp.getfloat(section, 'gamma')
+# )
+#
 
 # load data
 train_loader1 = data.DataLoader(
@@ -124,7 +126,7 @@ for i in range(0, epoch):
         x2 = x2.to(device)
         #data output
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
         cls_out, pre_out = model(x1, x2)
         _, pred = torch.max(cls_out, 1)
@@ -132,10 +134,12 @@ for i in range(0, epoch):
         losses_cls = loss_cls(cls_out, labels_cls)
         labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
-        loss_all = 10 * losses_pre + losses_cls
+        # loss_all = 5*losses_pre + losses_cls
+
+        loss_all = loss_re(pre_out, labels_reg, cls_out, labels_cls)
         loss_all.backward()
         optimizer_cls.step()
-        optimizer_pre.step()
+        # optimizer_pre.step()
 
         running_loss_cls += losses_cls.item() * x1.size(0)
         running_loss_pre += losses_pre.item() * x1.size(0)
@@ -161,7 +165,7 @@ for i in range(0, epoch):
     epoch_loss_cls = running_loss_cls / trainset_size
     epoch_loss_pre = running_loss_pre / trainset_size
     epoch_acc = running_corrects / trainset_size
-    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre, epoch_acc))
+    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre , epoch_acc))
     file_train.write('{} {:.4f} {:.4f} {:.4f}\n'.format(i, epoch_loss_cls, epoch_loss_pre, epoch_acc))
 
     # valid
@@ -175,9 +179,9 @@ for i in range(0, epoch):
         labels1_reg = labels1_reg.to(device)
         labels1_reg = labels1_reg.float()
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
-        output_cls, output_pre = model(inputs1, inputs2)
+        output_cls, output_pre= model(inputs1, inputs2)
         _, pred1 = torch.max(output_cls, 1)
         losses1_cls = loss_cls(output_cls, labels1_cls)
         loss_val_cls += losses1_cls.item() * inputs1.size(0)

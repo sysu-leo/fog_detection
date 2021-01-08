@@ -1,10 +1,10 @@
 import os
 import shutil
 
-src_path = '/mnt/b2243f03-6052-4c66-8b36-9241f1f5d31b/SCENE_1_ok'
-valid_path = '/home/liqiang/Desktop/valid.txt'
-train_path = '/home/liqiang/Desktop/train.txt'
-test_path = '/home/liqiang/Desktop/test.txt'
+src_path = '/home/dell/Documents/data/SCENE_1_dark'
+valid_path = '/home/dell/Desktop/valid.txt'
+train_path = '/home/dell/Desktop/train.txt'
+test_path = '/home/dell/Desktop/test.txt'
 train_file = open(train_path, 'w')
 valid_file = open(valid_path, 'w')
 test_file = open(test_path, 'w')

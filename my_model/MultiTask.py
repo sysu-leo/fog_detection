@@ -20,6 +20,6 @@ class Multi_Task(nn.Module):
         m_x = torch.cat((d_x, g_x), dim=1)
 
         fog_level = self.task1(m_x)
-        vis_ditance = self.task2(m_x)
+        vis_ditance = self.task2(m_x, fog_level)
 
         return fog_level, vis_ditance

@@ -1,6 +1,6 @@
 from my_model.GFeature_based import Multi_Task
 from Dataset.myDataSet import MyDataSet
-
+from my_model.myloss import Relative_loss
 import torchvision.transforms as transforms
 import torch.utils.data as data
 import torch.nn as nn
@@ -78,20 +78,21 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 
 loss_pre = nn.L1Loss()
 
+loss_re = Relative_loss()
 # set optimizer
-optimizer_pre = torch.optim.SGD(
-    model.parameters(),
-    lr=cp.getfloat(section, 'lr2'),
-    momentum=cp.getfloat(section,'momentum'),
-    weight_decay=cp.getfloat(section, 'weight_decay')
-)
-
-# set schecual
-scheduler_pre = torch.optim.lr_scheduler.StepLR(
-    optimizer_pre,
-    step_size =cp.getint(section, 'step_size'),
-    gamma = cp.getfloat(section, 'gamma')
-)
+# optimizer_pre = torch.optim.SGD(
+#     model.parameters(),
+#     lr=cp.getfloat(section, 'lr2'),
+#     momentum=cp.getfloat(section,'momentum'),
+#     weight_decay=cp.getfloat(section, 'weight_decay')
+# )
+#
+# # set schecual
+# scheduler_pre = torch.optim.lr_scheduler.StepLR(
+#     optimizer_pre,
+#     step_size =cp.getint(section, 'step_size'),
+#     gamma = cp.getfloat(section, 'gamma')
+# )
 
 
 # load data
@@ -109,33 +110,34 @@ trainset_size = len(trainset)
 validset_size = len(validset)
 
 # train
-model.train()
-for i in range(0, epoch):
+for i in range(161, epoch):
     running_loss_cls = 0.0
     running_corrects = 0
     running_loss_pre = 0.0
     step = 0
     all = int(trainset_size / batchsize +1)
     for _, x1, x2, labels_cls, labels_reg in train_loader1:
-        # data input
+        #data input
         labels_cls = labels_cls.to(device)
         labels_reg = labels_reg.to(device)
         x1 = x1.to(device)
         x2 = x2.to(device)
-        # data output
+        #data output
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
         cls_out, pre_out = model(x1, x2)
         _, pred = torch.max(cls_out, 1)
-        # loss calculation
+        #loss calculation
         losses_cls = loss_cls(cls_out, labels_cls)
         labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
-        loss_all = 10 * losses_pre + losses_cls
+        # loss_all = 5*losses_pre + losses_cls
+
+        loss_all = loss_re(pre_out, labels_reg, cls_out, labels_cls)
         loss_all.backward()
         optimizer_cls.step()
-        optimizer_pre.step()
+        # optimizer_pre.step()
 
         running_loss_cls += losses_cls.item() * x1.size(0)
         running_loss_pre += losses_pre.item() * x1.size(0)
@@ -144,11 +146,11 @@ for i in range(0, epoch):
         print('epoch{}: {}/{} Loss_Cls:{:.4f} Loss_Pre:{:.4f} ACC:{:.4f}'.format(
             i, step, all,
             losses_cls.item(),
-            losses_pre.item() * 500,
-            torch.sum(pred == labels_cls.data).item() / x1.size(0))
+            losses_pre.item(),
+            torch.sum(pred == labels_cls.data).item()/ x1.size(0))
         )
 
-        # release cache
+        #release cache
         labels_cls = labels_cls.to('cpu')
         labels_reg = labels_reg.to('cpu')
         x1 = x1.to('cpu')
@@ -161,7 +163,7 @@ for i in range(0, epoch):
     epoch_loss_cls = running_loss_cls / trainset_size
     epoch_loss_pre = running_loss_pre / trainset_size
     epoch_acc = running_corrects / trainset_size
-    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre * 500, epoch_acc))
+    print('**************************epoch{} Loss_Cls:{:.4f}, Loss_Pre:{:.4f}, Acc: {:.4f}'.format(i, epoch_loss_cls,epoch_loss_pre , epoch_acc))
     file_train.write('{} {:.4f} {:.4f} {:.4f}\n'.format(i, epoch_loss_cls, epoch_loss_pre, epoch_acc))
 
     # valid
@@ -175,9 +177,9 @@ for i in range(0, epoch):
         labels1_reg = labels1_reg.to(device)
         labels1_reg = labels1_reg.float()
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
-        output_cls, output_pre = model(inputs1, inputs2)
+        output_cls, output_pre= model(inputs1, inputs2)
         _, pred1 = torch.max(output_cls, 1)
         losses1_cls = loss_cls(output_cls, labels1_cls)
         loss_val_cls += losses1_cls.item() * inputs1.size(0)
@@ -199,7 +201,6 @@ for i in range(0, epoch):
 
     print('**************************Valid{} Loss_Cls:{:.4f} Loss_Pre:{:4f} Acc: {:.4f}'.format(i, val_loss_cls, val_loss_pre, val_acc))
     file_valid.write('{} {:.4f} {:.4f} {:.4f}\n'.format(i, val_loss_cls, val_loss_pre,  val_acc))
-
 
     if i%10 == 0:
         path = '/home/dell/Documents/Parameters/GFBM/'+'epoch_{}'.format(i) + '.pth'

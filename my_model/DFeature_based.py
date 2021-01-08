@@ -15,5 +15,5 @@ class Multi_Task(nn.Module):
         d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
 
         fog_level = self.task1(d_x)
-        vis_ditance = self.task2(d_x)
+        vis_ditance = self.task2(d_x, fog_level)
         return fog_level, vis_ditance
