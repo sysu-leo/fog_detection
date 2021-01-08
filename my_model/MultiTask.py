@@ -58,7 +58,7 @@ class Multi_Task_3(nn.Module) :
         d_x = self.d_feature(x2)
 
         m_x = torch.cat((d_x, g_x), dim=1)
-        g_x = torch.reshape(m_x, (m_x.size(0), 1, 36, 36))
+        m_x = torch.reshape(m_x, (m_x.size(0), 1, 36, 36))
 
         fog_level = self.task1(m_x)
         vis_ditance = self.task2(m_x, fog_level)

@@ -44,7 +44,7 @@ validset = MyDataSet(
 )
 
 # set gpu_device
-device = torch.device("cuda:1")
+device = torch.device("cuda:0")
 torch.cuda.set_device(device)
 
 
