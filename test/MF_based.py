@@ -21,7 +21,7 @@ batchsize = cp.getint(section, 'batchsize')
 #file = 'GFBM'
 #file = 'DFBM'
 file = 'mul_task_mb'
-epoch = '20'
+epoch = '0'
 result_file = open('../test_data/result_' + file +'_' + epoch + '.txt', 'w')
 statistics_file = open('../test_data/statistics_' + file +'_' + epoch + '.txt', 'w')
 
@@ -91,7 +91,7 @@ with torch.no_grad():
                 pre_vis = pre_out[i].float()
                 result_file.write(img_name+ ' ' + str(level) + ' ' + str(pre_level) + ' ' + str(vis) + ' ' + str(pre_vis) + '\n')
                 res_dict[level][pre_level] += 1
-                average_error += float(abs((pre_vis -  vis)))/float(vis)
+                average_error += float(abs((pre_vis -  vis)))
             except:
                 print('error')
 

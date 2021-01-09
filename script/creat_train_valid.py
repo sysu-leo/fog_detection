@@ -1,7 +1,7 @@
 import os
 import shutil
 
-src_path = '/home/dell/Documents/data/SCENE_1_dark'
+src_path = '/home/dell/Documents/data/SCENE_1_slice'
 valid_path = '/home/dell/Desktop/valid.txt'
 train_path = '/home/dell/Desktop/train.txt'
 test_path = '/home/dell/Desktop/test.txt'
