@@ -7,7 +7,7 @@ class Multi_Task(nn.Module):
     def __init__(self):
         super(Multi_Task, self).__init__()
         self.g_feature = g_exactor(in_chanel=4)
-        self.d_feature = g_exactor(in_chanel=3)
+        self.d_feature = d_exactor(in_chanel=3)
         self.task1 = FogLevel_Classify()
         self.task2 = VisDistance_Estimation_2()
 
@@ -29,7 +29,7 @@ class Multi_Task_2(nn.Module) :
         super(Multi_Task_2, self).__init__()
         self.softmax = nn.Softmax(dim=1)
         self.g_feature = g_exactor(in_chanel=4, out_chanel=1024)
-        self.d_feature = g_exactor(in_chanel=3, out_chanel=256)
+        self.d_feature = d_exactor(input_channel=3, out_channel=256)
         self.task1 = FogLevel_Classify_FC()
         self.task2 = Visibility_Estimation_FC()
 
