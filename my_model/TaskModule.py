@@ -20,14 +20,14 @@ class FogLevel_Classify(nn.Module):
             nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3),
             nn.BatchNorm2d(32),
             nn.ELU(inplace=True),
-            nn.Conv2d(in_channels=32, out_channels=5, kernel_size=1),
+            nn.Conv2d(in_channels=32, out_channels=7, kernel_size=1),
             nn.ELU(),
             nn.AdaptiveAvgPool2d((1, 1))
         )
     def forward(self, x):
         x = self.classifier(x)
         x = self.classifier2(x)
-        x = x.view(x.size(0), 1*1*5)
+        x = x.view(x.size(0), 1*1*7)
         return x
 
 
