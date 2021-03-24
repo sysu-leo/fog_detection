@@ -10,6 +10,7 @@
 import torch
 import torch.nn as nn
 from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
+from my_model.TaskModule import FogLevel_Classify_FC, Visibility_Estimation_FC
 
 class BasicConv2d(nn.Module):
 
@@ -248,8 +249,8 @@ class InceptionV3(nn.Module):
 
     def __init__(self, num_classes=6):
         super().__init__()
-        self.task1 = FogLevel_Classify(input_channel=1)
-        self.task2 = VisDistance_Estimation(input_channel=1)
+        self.task1 = FogLevel_Classify(input_channel=)
+        self.task2 = VisDistance_Estimation(input_channel=1024)
         self.Conv2d_1a_3x3 = BasicConv2d(3, 32, kernel_size=3, padding=1)
         self.Conv2d_2a_3x3 = BasicConv2d(32, 32, kernel_size=3, padding=1)
         self.Conv2d_2b_3x3 = BasicConv2d(32, 64, kernel_size=3, padding=1)
@@ -331,7 +332,7 @@ class InceptionV3(nn.Module):
         d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
 
         fog_level = self.task1(d_x)
-        vis_ditance = self.task2(d_x)
+        vis_ditance = self.task2(d_x, fog_level)
         return fog_level, vis_ditance
 
 

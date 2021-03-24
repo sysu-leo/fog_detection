@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim
 import os
 from configparser import ConfigParser
+from my_model.myloss import Relative_loss
 
 # read parameters
 
@@ -72,8 +73,8 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 )
 
 
-loss_pre = nn.SmoothL1Loss()
-
+loss_pre = nn.L1Loss()
+loss_re = Relative_loss()
 # set optimizer
 optimizer_pre = torch.optim.SGD(
     model.parameters(),
@@ -120,7 +121,7 @@ for i in range(0, epoch):
         x2 = x2.to(device)
         # data output
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
         cls_out, pre_out = model(x1, x2)
         _, pred = torch.max(cls_out, 1)
@@ -128,10 +129,14 @@ for i in range(0, epoch):
         losses_cls = loss_cls(cls_out, labels_cls)
         labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
-        loss_all = 10 * losses_pre + losses_cls
+        # loss_all = 5*losses_pre + losses_cls
+
+        loss_all = loss_re(pre_out, labels_reg, cls_out, labels_cls)
         loss_all.backward()
         optimizer_cls.step()
-        optimizer_pre.step()
+        # loss_all.backward()
+        # optimizer_cls.step()
+        # optimizer_pre.step()
 
         running_loss_cls += losses_cls.item() * x1.size(0)
         running_loss_pre += losses_pre.item() * x1.size(0)
@@ -164,14 +169,14 @@ for i in range(0, epoch):
     loss_val_cls = 0.0
     loss_val_pre = 0.0
     correct_val = 0
-    for _, inputs1, inputs2,  labels1_cls, labels1_reg in valid_loader:
+    for _, inputs1, inputs2, labels1_cls, labels1_reg in valid_loader:
         inputs1 = inputs1.to(device)
         inputs2 = inputs2.to(device)
         labels1_cls = labels1_cls.to(device)
         labels1_reg = labels1_reg.to(device)
         labels1_reg = labels1_reg.float()
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
         output_cls, output_pre = model(inputs1, inputs2)
         _, pred1 = torch.max(output_cls, 1)
@@ -193,9 +198,9 @@ for i in range(0, epoch):
     val_loss_pre = loss_val_pre / validset_size
     val_acc = correct_val / validset_size
 
-    print('**************************Valid{} Loss_Cls:{:.4f} Loss_Pre:{:4f} Acc: {:.4f}'.format(i, val_loss_cls, val_loss_pre, val_acc))
-    file_valid.write('{} {:.4f} {:.4f} {:.4f}\n'.format(i, val_loss_cls, val_loss_pre,  val_acc))
-
+    print('**************************Valid{} Loss_Cls:{:.4f} Loss_Pre:{:4f} Acc: {:.4f}'.format(i, val_loss_cls,
+                                                                                         val_loss_pre, val_acc))
+    file_valid.write('{} {:.4f} {:.4f} {:.4f}\n'.format(i, val_loss_cls, val_loss_pre, val_acc))
 
     if i%10 == 0:
         path = '/home/dell/Documents/Parameters/RES150/'+'epoch_{}'.format(i) + '.pth'

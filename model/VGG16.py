@@ -4,6 +4,7 @@ import os
 import sys
 import torch
 from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
+from my_model.TaskModule import FogLevel_Classify_FC, Visibility_Estimation_FC
 
 current_dir = os.getcwd()    # obtain work dir
 sys.path.append(current_dir) # add work dir to sys path
@@ -11,8 +12,8 @@ sys.path.append(current_dir) # add work dir to sys path
 class Vgg16(nn.Module):
     def __init__(self):
         super(Vgg16, self).__init__()
-        self.task1 = FogLevel_Classify(input_channel=1)
-        self.task2 = VisDistance_Estimation(input_channel=1)
+        self.task1 = FogLevel_Classify_FC(input_channel=1024)
+        self.task2 = Visibility_Estimation_FC(input_channel=1024)
 
         # 第一层，2个卷积层和一个最大池化层
         self.layer1 = nn.Sequential(
@@ -115,8 +116,7 @@ class Vgg16(nn.Module):
         x = self.conv_layer(x)
         x = x.view(x.size(0), 7*7*512)
         d_x = self.fc(x)
-        d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
 
         fog_level = self.task1(d_x)
-        vis_ditance = self.task2(d_x)
+        vis_ditance = self.task2(d_x, fog_level)
         return fog_level, vis_ditance

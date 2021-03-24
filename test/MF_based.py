@@ -1,6 +1,10 @@
-from my_model.MultiTask import Multi_Task
-#from my_model.GFeature_based import Multi_Task
+#from my_model.MultiTask import Multi_Task
+from my_model.MultiTask import Multi_Task_2, Multi_Task_2_na, Multi_Task_2_Nocas
+from my_model.GFeature_based import Multi_Task
 #from my_model.DFeature_based import Multi_Task
+from my_model.FogLevel_Single import FogLevel_Single
+from my_model.DisEstimation_Single import DisEstimation_Single
+#from my_model.DisEstimation_Single_na import DisEstimation_Single
 from Dataset.myDataSet import MyDataSet
 
 import torchvision.transforms as transforms
@@ -20,8 +24,9 @@ batchsize = cp.getint(section, 'batchsize')
 
 #file = 'GFBM'
 #file = 'DFBM'
-file = 'mul_task_mb'
-epoch = '0'
+#file = 'mul_task_mb_2_2_Nocas'
+file = 'mul_task_mb_2_2'
+epoch = '150'
 result_file = open('../test_data/result_' + file +'_' + epoch + '.txt', 'w')
 statistics_file = open('../test_data/statistics_' + file +'_' + epoch + '.txt', 'w')
 
@@ -47,7 +52,7 @@ torch.cuda.set_device(device)
 
 # load weight
 weight_path = '/home/dell/Documents/Parameters/' + file + '/epoch_' + epoch + '.pth'
-model = Multi_Task()
+model = Multi_Task_2()
 model = model.to(device)
 model.load_state_dict(torch.load(weight_path))
 

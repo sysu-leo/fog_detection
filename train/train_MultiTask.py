@@ -105,7 +105,7 @@ train_loader1 = data.DataLoader(
 
 valid_loader = data.DataLoader(
     dataset=validset,
-    batch_size=10)
+    batch_size=32)
 
 
 trainset_size = len(trainset)

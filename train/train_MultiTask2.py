@@ -49,7 +49,7 @@ torch.cuda.set_device(device)
 
 
 # load weight
-#weight_path = '/home/dell/Documents/Parameters/mul_task_mb/epoch_260.pth'
+#weight_path = '/home/dell/Documents/Parameters/mul_task_mb_2/epoch_40.pth'
 model = Multi_Task_2()
 model = model.to(device)
 #model.load_state_dict(torch.load(weight_path))

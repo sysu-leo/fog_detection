@@ -43,15 +43,15 @@ validset = MyDataSet(
 )
 
 # set gpu_device
-device = torch.device("cuda:1")
+device = torch.device("cuda:0")
 torch.cuda.set_device(device)
 
 
 # load weight
-#weight_path = '../Parameters/mul_task2/epoch_fea_20.pth'
+weight_path = '/home/dell/Documents/Parameters/fog_level_single/epoch_20.pth'
 model = FogLevel_Single()
 model = model.to(device)
-# fea_model.load_state_dict(torch.load(weight_path))
+model.load_state_dict(torch.load(weight_path))
 #summary(model.cuda(),  ((4, 448, 448), (3, 488, 488)))
 # print(model)
 

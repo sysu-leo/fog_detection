@@ -12,16 +12,16 @@ test_file = open(test_path, 'w')
 for i in os.listdir(src_path):
     new_path = os.path.join(src_path, i)
     tlist = os.listdir(new_path)
-    for j in range(len(tlist)):
+    num = len(tlist)
+    for j in range(num):
         line = tlist[j] + '\n'
-        if j < 1200 :
+        if j < num * 0.7:
             train_file.write(line)
-        elif j < 1300:
+        elif j < num * 0.8:
             valid_file.write(line)
-        elif j < 1400:
-            test_file.write(line)
         else:
-            break
+            test_file.write(line)
+
 train_file.close()
 valid_file.close()
 test_file.close()

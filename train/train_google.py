@@ -6,6 +6,8 @@ import torch.nn as nn
 import torch.optim
 import os
 from configparser import ConfigParser
+from model.googlenet import GoogleNet
+from my_model.myloss import Relative_loss
 
 # read parameters
 
@@ -19,8 +21,8 @@ batchsize = cp.getint(section, 'batchsize')
 
 #记录训练数据
 
-file_train = open(cp.get(section, 'acc_res50_train'), 'w')
-file_valid = open(cp.get(section, 'acc_res50_valid'), 'w')
+file_train = open(cp.get(section, 'acc_google_train'), 'w')
+file_valid = open(cp.get(section, 'acc_google_valid'), 'w')
 
 #read data
 
@@ -43,13 +45,14 @@ validset = MyDataSet(
 )
 
 # load_model and set gpu_device
-device = torch.device("cuda:1")
-torch.cuda.set_device(device)
+device_ids = [0,1]
+
 
 
 # load weight
-model = ResNet50()
-model = model.to(device)
+model = GoogleNet()
+model = torch.nn.DataParallel(model, device_ids=device_ids)
+model = model.cuda(device = device_ids[0])
 #model.load_state_dict(torch.load(weight_path))
 
 
@@ -73,6 +76,7 @@ scheduler_cls = torch.optim.lr_scheduler.StepLR(
 
 
 loss_pre = nn.SmoothL1Loss()
+loss_re = Relative_loss()
 
 # set optimizer
 optimizer_pre = torch.optim.SGD(
@@ -114,24 +118,30 @@ for i in range(0, epoch):
     all = int(trainset_size / batchsize +1)
     for _, x1, x2, labels_cls, labels_reg in train_loader1:
         # data input
-        labels_cls = labels_cls.to(device)
-        labels_reg = labels_reg.to(device)
-        x1 = x1.to(device)
-        x2 = x2.to(device)
+        tmp_x = torch.tensor([[35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 350.0 / 500.0, 1.0],
+                             [35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 350.0 / 500.0, 1.0]]).reshape((2,5)).cuda(
+            device=device_ids[0])
+        labels_cls = labels_cls.cuda(device = device_ids[0])
+        labels_reg = labels_reg.cuda(device = device_ids[0])
+        x1 = x1.cuda(device = device_ids[0])
+        x2 = x2.cuda(device = device_ids[0])
         # data output
         optimizer_cls.zero_grad()
-        optimizer_pre.zero_grad()
+        # optimizer_pre.zero_grad()
 
-        cls_out, pre_out = model(x1, x2)
+        cls_out, pre_out = model(x1, x2, tmp_x)
         _, pred = torch.max(cls_out, 1)
         # loss calculation
         losses_cls = loss_cls(cls_out, labels_cls)
         labels_reg = labels_reg.float()
         losses_pre = loss_pre(pre_out, labels_reg)
-        loss_all = 10 * losses_pre + losses_cls
+        # loss_all = 5*losses_pre + losses_cls
+
+        loss_all = loss_re(pre_out, labels_reg, cls_out, labels_cls)
         loss_all.backward()
-        optimizer_cls.step()
-        optimizer_pre.step()
+        # optimizer_cls.step()
+        # optimizer_cls.step()
+        # optimizer_pre.step()
 
         running_loss_cls += losses_cls.item() * x1.size(0)
         running_loss_pre += losses_pre.item() * x1.size(0)
@@ -165,15 +175,18 @@ for i in range(0, epoch):
     loss_val_pre = 0.0
     correct_val = 0
     for _, inputs1, inputs2,  labels1_cls, labels1_reg in valid_loader:
-        inputs1 = inputs1.to(device)
-        inputs2 = inputs2.to(device)
-        labels1_cls = labels1_cls.to(device)
-        labels1_reg = labels1_reg.to(device)
+        inputs1 = inputs1.cuda(device = device_ids[0])
+        inputs2 = inputs2.cuda(device = device_ids[0])
+        labels1_cls = labels1_cls.cuda(device = device_ids[0])
+        labels1_reg = labels1_reg.cuda(device = device_ids[0])
         labels1_reg = labels1_reg.float()
         optimizer_cls.zero_grad()
         optimizer_pre.zero_grad()
+        tmp_x = torch.tensor([[35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 350.0 / 500.0, 1.0],
+                              [35.0 / 500.0, 75.0 / 500.0, 150.0 / 500.0, 350.0 / 500.0, 1.0]]).reshape((2, 5)).cuda(
+            device=device_ids[0])
 
-        output_cls, output_pre = model(inputs1, inputs2)
+        output_cls, output_pre = model(inputs1, inputs2, tmp_x)
         _, pred1 = torch.max(output_cls, 1)
         losses1_cls = loss_cls(output_cls, labels1_cls)
         loss_val_cls += losses1_cls.item() * inputs1.size(0)

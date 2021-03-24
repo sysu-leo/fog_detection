@@ -12,6 +12,7 @@
 import torch
 import torch.nn as nn
 from my_model.TaskModule import FogLevel_Classify, VisDistance_Estimation
+from my_model.TaskModule import FogLevel_Classify_FC, Visibility_Estimation_FC
 
 class Inception(nn.Module):
     def __init__(self, input_channels, n1x1, n3x3_reduce, n3x3, n5x5_reduce, n5x5, pool_proj):
@@ -97,10 +98,10 @@ class GoogleNet(nn.Module):
 
         #input feature size: 8*8*1024
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.dropout = nn.Dropout2d(p=0.4)
-        self.linear = nn.Linear(1024, 1024)
+        # self.dropout = nn.Dropout2d(p=0.4)
+        # self.linear = nn.Linear(1024, 1024)
 
-    def forward(self, x):
+    def forward(self, x, y, tmp_x):
         output = self.prelayer(x)
         output = self.a3(output)
         output = self.b3(output)
@@ -123,13 +124,12 @@ class GoogleNet(nn.Module):
         #however the use of dropout remained essential even after
         #removing the fully connected layers."""
         output = self.avgpool(output)
-        output = self.dropout(output)
-        output = output.view(output.size()[0], -1)
-        d_x = self.linear(output)
+        # output = self.dropout(output)
+        d_x = output.view(output.size()[0], -1)
+        # d_x = self.linear(output)
         d_x = torch.reshape(d_x, (d_x.size(0), 1, 32, 32))
-
         fog_level = self.task1(d_x)
-        vis_ditance = self.task2(d_x)
+        vis_ditance = self.task2(d_x, fog_level, tmp_x)
         return fog_level, vis_ditance
 
 def googlenet():
