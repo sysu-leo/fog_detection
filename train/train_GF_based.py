@@ -48,10 +48,10 @@ torch.cuda.set_device(device)
 
 
 # load weight
-#weight_path = '../Parameters/mul_task2/epoch_fea_20.pth'
+weight_path = '../Parameters/mul_task2/epoch_fea_20.pth'
 model = Multi_Task()
 model = model.to(device)
-# fea_model.load_state_dict(torch.load(weight_path))
+model.load_state_dict(torch.load(weight_path))
 #summary(model.cuda(),  ((4, 448, 448), (3, 488, 488)))
 # print(model)
 
